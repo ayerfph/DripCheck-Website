@@ -1,0 +1,86 @@
+import { useState } from "react";
+
+function App() {
+
+    const [city, setCity] = useState("");
+    const [weather, setWeather] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+
+    async function searchWeather() {
+
+        if (!city.trim()) return;
+
+        setLoading(true);
+        setError("");
+        setWeather(null);
+
+        try {
+
+            const response = await fetch(
+                `http://localhost:5000/api/weather?city=${encodeURIComponent(city)}`
+            );
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.message);
+            }
+
+            setWeather(result.data);
+
+        } catch (err) {
+
+            setError(err.message || "Something went wrong.");
+
+        } finally {
+
+            setLoading(false);
+
+        }
+    }
+
+    return (
+        <div>
+
+            <h1>Weather Search</h1>
+
+            <input
+                type="text"
+                placeholder="Search city..."
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+            />
+
+            <button onClick={searchWeather}>
+                Search
+            </button>
+
+            {loading && <p>Loading weather...</p>}
+
+            {error && <p>{error}</p>}
+
+            {weather && (
+                <div>
+                    <h2>Complete API response</h2>
+                    <pre
+                        style={{
+                            maxWidth: "100%",
+                            overflowX: "auto",
+                            padding: "1rem",
+                            textAlign: "left",
+                            background: "#1e1e1e",
+                            color: "#f5f5f5",
+                            borderRadius: "8px",
+                        }}
+                    >
+                        {JSON.stringify(weather, null, 2)}
+                    </pre>
+                </div>
+            )}
+
+        </div>
+    );
+}
+
+export default App;
